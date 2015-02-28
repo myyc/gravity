@@ -1,0 +1,132 @@
+<!doctype html>
+<html>
+    <head>
+        <script type="text/javascript" src="https://code.jquery.com/jquery-2.1.3.min.js"></script>
+        <style>
+         #cv { border: 1px dashed black }
+        </style>
+    </head>
+    <body>
+        <script>
+         var ctx;
+         var xc = 0, yc = 0;
+         var r = 0.01;
+         var h = 0.03;
+
+         var vx = 0.5;
+         var vy = 1;
+
+         var vcx = 0.;
+         var vcy = 0.;
+
+         var ctrs = [
+             {x: -0.5, y: 0.5},
+             {x: -0.5, y: -0.5},
+             {x: 0.5, y: 0.5},
+             {x: 0.5, y: -0.5},
+         ];
+
+         var vctrs = [
+             {x: 0, y: 0},
+             {x: 0, y: 0},
+             {x: 0, y: 0},
+             {x: 0, y: 0},
+         ];
+
+         function xp(x) {
+             return (1 + x)*300;
+         }
+
+         function yp(y) {
+             return (1 - y)*300;
+
+         }
+
+         function rp(r) {
+             return r * 600;
+         }
+
+         function circle(x, y, r) {
+             ctx.beginPath();
+             ctx.arc(x, y, r, 0, 2*Math.PI);
+         }
+
+         function dxy(xa, xb, ya, yb) {
+             return Math.pow((xa - xb)*(xa - xb) + (ya - yb)*(ya - yb), 0.5)
+         }
+
+         function bm() {
+             var u1 = Math.random(), u2 = Math.random();
+             var r = -2 * Math.log(u1);
+             var t = 2*Math.PI*u2;
+
+             return [r*Math.cos(t), r*Math.sin(t)];
+         }
+
+         function animate() {
+             ax = 0;
+             ay = 0;
+             for (var i = 0; i < 4; i++) {
+                 var am = Math.max(2 / Math.pow(dxy(xc, ctrs[i].x, yc, ctrs[i].y), 1));
+                 ax -= am*(xc - ctrs[i].x) / dxy(xc, ctrs[i].x, yc, ctrs[i].y);
+                 ay -= am*(yc - ctrs[i].y) / dxy(xc, ctrs[i].x, yc, ctrs[i].y);
+             }
+
+             ax -= 6*vx;
+             ay -= 6*vy;
+
+             if((xc + r >= 1 && vx > 0) || (xc - r <= -1 && vx < 0)) {
+                 vx = -vx;
+             }
+
+             if((yc + r >= 1 && vy > 0) || (yc - r <= -1 && vy < 0)) {
+                 vy = -vy;
+             }
+
+             for(var i = 0; i < 4; i++) {
+                 var d = bm();
+
+                 vctrs[i].x += (0.01*d[0] - 0.01*vctrs[i].x);
+                 vctrs[i].y += (0.01*d[1] - 0.01*vctrs[i].y);
+
+                 ctrs[i].x += vctrs[i].x * h;
+                 ctrs[i].y += vctrs[i].y * h;
+
+                 if(ctrs[i].x >= 1) { ctrs[i].x -= 2 };
+                 if(ctrs[i].y >= 1) { ctrs[i].y -= 2 };
+                 if(ctrs[i].x <= -1) { ctrs[i].x += 2 };
+                 if(ctrs[i].y <= -1) { ctrs[i].y += 2 };
+             }
+
+
+             vx += h * ax;
+             vy += h * ay;
+
+             xc += vx*h;
+             yc += vy*h;
+
+             console.log(vx, vy)
+         }
+
+         $(document).ready(function() {
+             var c = document.getElementById("cv");
+             console.log(document);
+             ctx =  c.getContext("2d");
+
+             setInterval(function () {
+                 animate();
+                 ctx.clearRect(0, 0, 600, 600);
+
+                 ctx.fillStyle = "red";
+                 for (var i = 0; i < 4; i++) {
+                     circle(xp(ctrs[i].x), yp(ctrs[i].y), rp(r/3));
+                     ctx.fill()
+                 }
+                 circle(xp(xc), yp(yc), rp(r));
+                 ctx.stroke()
+             }, 30);
+         });
+        </script>
+        <canvas id="cv" width="600", height="600"></canvas>
+    </body>
+</html>
